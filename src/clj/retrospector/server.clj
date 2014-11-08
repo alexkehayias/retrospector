@@ -34,7 +34,7 @@
                                 :href "/static/styles/master.css"}])
            (enlive/html [:script (get-repl-client-js)])
            (enlive/html [:script (browser-connected-repl-js)])
-           (enlive/html [:script {:href "/scripts/app.js"}])))
+           (enlive/html [:script {:src "/static/scripts/app.js"}])))
 
 (defn source-files []
   #(slurp (:uri %)))

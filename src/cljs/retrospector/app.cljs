@@ -144,5 +144,4 @@
   (dom/listen! (sel1 :body) :keydown keyboard-handler))
 
 ;; Start the game on page load
-;; (set! (.-onload js/window) reset-app!)
-(reset-app!)
+(set! (.-onload js/window) reset-app!)
