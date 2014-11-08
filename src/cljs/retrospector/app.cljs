@@ -78,11 +78,12 @@
    [\"#ffffff\" \"#ffffff\" \"#ffffff\"]]"
   [grid color-grid]
   (for [[grid-row color-row] (map #(into [] [%1 %2]) grid color-grid)]
-    (for [[cell color] (map #(into [] [%1 %2]) grid-row color-row)]
+    (for [[cell color] (map vector grid-row color-row)]
       (assoc cell :color (or color "#000000")))))
 
 (defn swap-to-colors!
   [color-grid]
+  (debug "Swapping colors")
   (draw-grid! (reset! GRID (change-colors @GRID color-grid))))
 
 (defn reset-app!
@@ -95,6 +96,10 @@
   (init-html!)
   (init-renderer!)
   (init-grid!))
+
+(defn load-colors-callback [response]
+  (let [resp (js->clj (.getResponseJson (.-target response)))]
+    (swap-to-colors! resp)))
 
 ;; Start the game on page load
 (set! (.-onload js/window) reset-app!)

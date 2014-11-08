@@ -37,9 +37,7 @@
                    (+ (- max min) target-min)))
          target-max))
 
-;; TODO use a resource loader from the classpath
-(def file-location
-  "/Users/alexkehayias/Dropbox/Private/Clojure/retrospector/resources/public/stars")
+(def file-location "./resources/public/stars")
 
 (defn sort-stars
   "Sort stars by calling out to the shell. Dear god."
@@ -98,19 +96,20 @@
   (for [row grid]
     (for [cell row]
       (let [star-count (:total cell 0)
-            r (scale-to-range (safe-divide (:speed cell 0) star-count)
-                              96.942 -1000.125 255 0)
+            r (scale-to-range (safe-divide (get cell "speed" 0) star-count)
+                              1000 -1000.125 255 0)
             g (scale-to-range star-count 10 0 255 0)
-            b (scale-to-range (safe-divide (:lum cell 0) star-count)
+            b (scale-to-range (safe-divide (get cell "lum" 0) star-count)
                               50 0 255 0)]
         (assert (<= r 255))
         (assert (<= g 255))
         (assert (<= b 255))
-        ;; (println "RGB" r g b)
-        (str "#"
+        (if (> (:total cell) 0) 
+          (str "#"
              (format "%02X" (int r))
              (format "%02X" (int g))
-             (format "%02X" (int b)))))))
+             (format "%02X" (int b)))
+          "#000000")))))
 
 (def dimension->indx
   {"x" 0
