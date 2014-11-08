@@ -8,7 +8,8 @@
             [compojure.core :refer (GET defroutes)]
             [compojure.handler :as ch]
             ring.adapter.jetty
-            [retrospector.api :refer [stars-handler]]))
+            [retrospector.api :refer [stars-handler]])
+  (:gen-class :name retrospector.server.Run :main true))
 
 
 (defonce server (atom nil))
@@ -32,7 +33,8 @@
                                 :type "text/css"
                                 :href "/static/styles/master.css"}])
            (enlive/html [:script (get-repl-client-js)])
-           (enlive/html [:script (browser-connected-repl-js)])))
+           (enlive/html [:script (browser-connected-repl-js)])
+           (enlive/html [:script {:href "/scripts/app.js"}])))
 
 (defn source-files []
   #(slurp (:uri %)))
@@ -55,3 +57,6 @@
         srv (ring.adapter.jetty/run-jetty (-> #'site ch/api) options)]
     (connect-to-brepl (reset-brepl-env!))
     (reset! server #(.stop srv))))
+
+(defn -main []
+  (restart-server!))

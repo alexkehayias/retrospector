@@ -1,5 +1,5 @@
 (ns retrospector.app
-  (:use [retrospector.utils.logging :only [debug info warn error]])
+  (:use [retrospector.utils.logging :only [debug info error]])
   (:use-macros [dommy.macros :only [node sel sel1]])
   (:require [clojure.browser.repl :as repl]
             [dommy.core :as dom]))
@@ -7,6 +7,9 @@
 (def RENDERER (atom {}))
 
 (def GRID (atom []))
+
+(def HOSTNAME "127.0.0.1")
+(def PORT "9000")
 
 (def app-main
   [:div#main])
@@ -101,5 +104,43 @@
   (let [resp (js->clj (.getResponseJson (.-target response)))]
     (swap-to-colors! resp)))
 
+(def keycodes
+  {38 "x" ; :up
+   39 "y" ; :right
+   40 "z" ; :down
+   })
+
+(def STATE (atom {}))
+
+(defn make-request
+  "Make an async call to the server."
+  [field offset limit]
+  (debug "Getting stars" field offset limit)
+  (.send goog.net.XhrIo
+         (str "http://" HOSTNAME ":" PORT
+              "/api/v1/stars?field=" field
+              "&offset=" offset "&limit=" limit)
+         load-colors-callback)
+  (swap! STATE #(+ (get % field 0) 100)))
+
+(defn keyboard-handler
+  [e]
+  (.preventDefault e)
+  (.log js/console ev))
+
+(defn reset-app!
+  "Reload the entire application html and canvas app"
+  []
+  (info "Resetting html")
+  (try (do (dom/remove! (sel1 :#top-nav))
+           (dom/remove! (sel1 :#main)))
+       (catch js/Error e (error e)))
+  (init-html!)
+  (init-renderer!)
+  (init-grid!)
+  (dom/unlisten! (sel1 :body) :keydown keyboard-handler)
+  (dom/listen! (sel1 :body) :keydown keyboard-handler))
+
 ;; Start the game on page load
-(set! (.-onload js/window) reset-app!)
+;; (set! (.-onload js/window) reset-app!)
+(reset-app!)
