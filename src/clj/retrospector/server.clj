@@ -6,7 +6,12 @@
             [net.cgrand.enlive-html :as enlive]
             [compojure.route :refer (resources)]
             [compojure.core :refer (GET defroutes)]
-            ring.adapter.jetty))
+            [compojure.handler :as ch]
+            ring.adapter.jetty
+            [retrospector.api :refer [stars-handler]]))
+
+
+(defonce server (atom nil))
 
 (def project-root
   (str (System/getProperty "user.dir") "/resources/public"))
@@ -32,17 +37,18 @@
 (defroutes site
   (resources "/static")
   (GET "/app" req (app))
+  (GET "/api/v1/stars" req stars-handler)
   ;; TODO disable based on env
   ;; HACK for serving source maps via the server
   (GET source-root req (source-files))
   ;;(GET "/*" req (homepage))
   )
 
-(defn mk-server [& [options]]
+(defn restart-server! [& [options]]
+  (when-not (nil? @server)
+    ;; Close the server
+    (@server))
   (let [options (merge {:port 9000 :join? false} options) 
-        server (ring.adapter.jetty/run-jetty #'site options)]
+        srv (ring.adapter.jetty/run-jetty (-> #'site ch/api) options)]
     (connect-to-brepl (reset-brepl-env!))
-    #(.stop server)))
-
-(def server
-  (mk-server))
+    (reset! server #(.stop srv))))

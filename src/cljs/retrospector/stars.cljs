@@ -1,6 +1,7 @@
 (ns retrospector.stars)
 
 ;; Based on input data translate to colors
+;; Max and min calculated using the data in stars.speck
 
 (defn scale-to-255
   "Scale to a number between 1 and 255 based on the upwards and lower bounds"
@@ -10,12 +11,12 @@
 (defn luminosity->blue
   "Sets the blue level"
   [lum]
-  (scale-to-255 lum 4438.1123 -4670.2939))
+  (scale-to-255 lum 106732.27344 0.00016))
 
 (defn velocity->red
   [vel]
-  (scale-to-255 vel 76.92 0))
+  (scale-to-255 vel 96.942 -1000.125))
 
 (defn density->green
   [count]
-  (scale-to-255 count 769.019 -580.666))
+  (scale-to-255 count 10000 0))

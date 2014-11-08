@@ -9,6 +9,9 @@
                  [compojure "1.1.5"]
                  [enlive "1.1.1"]
 
+                 ;; json
+                 [cheshire "5.2.0"]
+
                  ;; cljs
                  [prismatic/dommy "0.1.1"]
                  [com.cemerick/clojurescript.test "0.3.1"]]
