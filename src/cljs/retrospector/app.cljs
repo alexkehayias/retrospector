@@ -121,12 +121,14 @@
               "/api/v1/stars?field=" field
               "&offset=" offset "&limit=" limit)
          load-colors-callback)
-  (swap! STATE #(+ (get % field 0) 100)))
+  (swap! STATE #(assoc % "x" (+ (get % "x") 100))))
 
 (defn keyboard-handler
   [e]
   (.preventDefault e)
-  (.log js/console ev))
+  (let [k (get keycodes (aget e "keyCode"))]
+    (when k
+      (make-request k (+ (get @STATE k 100) 100) 100))))
 
 (defn reset-app!
   "Reload the entire application html and canvas app"
