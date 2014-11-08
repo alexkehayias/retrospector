@@ -28,6 +28,9 @@
 (enlive/deftemplate app "public/app.html"
   []
   [:body] (enlive/append
+           (enlive/html [:link {:rel "stylesheet"
+                                :type "text/css"
+                                :href "/static/styles/master.css"}])
            (enlive/html [:script (get-repl-client-js)])
            (enlive/html [:script (browser-connected-repl-js)])))
 
