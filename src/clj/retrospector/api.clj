@@ -3,6 +3,27 @@
             [clojure.java.shell :refer [sh]]
             [clojure.string :as st]))
 
+(def star-data-mapping
+  ["map-x"
+   "map-y"
+   "x"
+   "y"
+   "z"
+   "colorb_v"
+   "lum"
+   "absmag"
+   "appmag"
+   "texnum"
+   "distly"
+   "dcalc"
+   "plx"
+   "plxerr"
+   "vx"
+   "vy"
+   "vz"
+   "speed"
+   "hipnum"])
+
 (defn scale-to-range
   "Scale to a number between target-max and target-min based on the upwards 
    and lower bounds"
@@ -26,9 +47,17 @@
          (st/split (:out (sh "bash" "-c" command)) #"\n"))))
 
 (defn aggregate-stars
-  "Return the aggregation of each star in the coll"
+  "Return the aggregation of each star in the coll
+
+   Example star-coll:
+   [norm-x norm-y [all-fields...]]
+   "
   [star-coll]
-  )
+  (let [total (count star-coll)
+        agg (if (empty? star-coll)
+              []
+              (apply map + star-coll))]
+    (assoc (into {} (map vector star-data-mapping agg)) :total total)))
 
 (def dimension->indx
   {"x" 0
@@ -49,6 +78,7 @@
 (defn filter-within-cell [cell star-coords]
   (filter #(within-grid? (nth cell 0) (nth cell 1)
                          (nth % 0) (nth % 1)
+                         ;; TODO set these as globals somewhere
                          (/ 1 (* 8 4)) (/ 1 (* 5 4)))
           star-coords))
 
@@ -76,7 +106,7 @@
         normalized-y (map #(scale-to-range % max-y min-y 1 0) all-y)
         ;; Contains the normalized values and a vector of the original
         ;; star values
-        normalized-stars (map vector normalized-x normalized-y star-coll)
+        normalized-stars (map (comp flatten vector) normalized-x normalized-y star-coll)
         grid (make-grid 1 1 (/ 1 (* 8 4)) (/ 1 (* 5 4)))]
     ;; Iterate through each row in the grid an get all the stars that
     ;; are within the bounds of each cell
@@ -92,5 +122,7 @@
                           (read-string (get params "limit" "100"))
                           (read-string (get params "offset" "1")))
         grid-with-stars (segment-stars stars "x" "y")]
-    
-    (json/generate-string grid-with-stars)))
+    ;; TODO aggregate each cell
+    (json/generate-string (for [row grid-with-stars]
+                            (for [cell row]
+                              (aggregate-stars cell))))))
