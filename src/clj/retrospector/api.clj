@@ -47,8 +47,9 @@
        (< y1 y2) (< y2 (+ y1 dy))))
 
 (defn filter-within-cell [cell star-coords]
-  ;; So this is a list of pairs and a list of lists of pairs
-  (filter #(within-grid? (nth cell 0) (nth cell 1) (nth % 0) (nth % 1) 0.1 0.1)
+  (filter #(within-grid? (nth cell 0) (nth cell 1)
+                         (nth % 0) (nth % 1)
+                         (/ 1 (* 8 4)) (/ 1 (* 5 4)))
           star-coords))
 
 (defn segment-stars
@@ -63,17 +64,20 @@
         ;; Translate star-coords to scale of 0 to 1
         all-x (map #(nth % 0) star-coords)
         all-y (map #(nth % 1) star-coords)
+        
+        ;; TODO ughhhhhh this
         max-x (apply max all-x)
         min-x (apply min all-x)
         max-y (apply max all-y)
-        min-y (apply min all-y)        
+        min-y (apply min all-y)
+
+        ;; And this
         normalized-x (map #(scale-to-range % max-x min-x 1 0) all-x)
         normalized-y (map #(scale-to-range % max-y min-y 1 0) all-y)
         ;; Contains the normalized values and a vector of the original
         ;; star values
         normalized-stars (map vector normalized-x normalized-y star-coll)
-        grid-dim (/ 1 10)
-        grid (make-grid 1 1 grid-dim grid-dim)]
+        grid (make-grid 1 1 (/ 1 (* 8 4)) (/ 1 (* 5 4)))]
     ;; Iterate through each row in the grid an get all the stars that
     ;; are within the bounds of each cell
     (map (fn [row]
@@ -86,5 +90,7 @@
   (let [params (:query-params request)
         stars (sort-stars (get params "field")
                           (read-string (get params "limit" "100"))
-                          (read-string (get params "offset" "1")))]
-    (json/generate-string (segment-stars stars "x" "y"))))
+                          (read-string (get params "offset" "1")))
+        grid-with-stars (segment-stars stars "x" "y")]
+    
+    (json/generate-string grid-with-stars)))
