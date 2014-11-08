@@ -24,12 +24,18 @@
    "speed"
    "hipnum"])
 
+(defn limit [n ceil]
+  (if (> n ceil)
+    ceil
+    n))
+
 (defn scale-to-range
   "Scale to a number between target-max and target-min based on the upwards 
    and lower bounds"
   [n max min target-max target-min]
-  (float (/ (* (- n min) (- target-max target-min))
-            (+ (- max min) 1))))
+  (limit (float (/ (* (- n min) (- target-max target-min))
+                   (+ (- max min) target-min)))
+         target-max))
 
 ;; TODO use a resource loader from the classpath
 (def file-location
@@ -58,6 +64,53 @@
               []
               (apply map + star-coll))]
     (assoc (into {} (map vector star-data-mapping agg)) :total total)))
+
+(defn safe-divide [n1 n2]
+  (try (/ n1 n2) (catch Exception e 0)))
+
+(defn gen-cell-colors
+  "Generate the cell color for a grid based on all aggregate star data
+   for the cell
+   Rules:
+   - Luminsity -> blue
+   - Velocity -> red
+   - Concentration -> green
+
+   Returns a grid where each value is an rgb hexicode value from 1 to 255
+   for each r, g, b
+
+   Example input:
+   [
+     [
+       {
+          field: 0.3,
+       {
+          field: 1.2
+       },
+       ...
+     ]
+     ...
+   ]
+   "
+  [grid]
+  ;; Scale based on the max and min of the data set for each
+  ;; attribute used for determining color
+  (for [row grid]
+    (for [cell row]
+      (let [star-count (:total cell 0)
+            r (scale-to-range (safe-divide (:speed cell 0) star-count)
+                              96.942 -1000.125 255 0)
+            g (scale-to-range star-count 10 0 255 0)
+            b (scale-to-range (safe-divide (:lum cell 0) star-count)
+                              50 0 255 0)]
+        (assert (<= r 255))
+        (assert (<= g 255))
+        (assert (<= b 255))
+        ;; (println "RGB" r g b)
+        (str "#"
+             (format "%02X" (int r))
+             (format "%02X" (int g))
+             (format "%02X" (int b)))))))
 
 (def dimension->indx
   {"x" 0
@@ -121,8 +174,8 @@
         stars (sort-stars (get params "field")
                           (read-string (get params "limit" "100"))
                           (read-string (get params "offset" "1")))
-        grid-with-stars (segment-stars stars "x" "y")]
-    ;; TODO aggregate each cell
-    (json/generate-string (for [row grid-with-stars]
-                            (for [cell row]
-                              (aggregate-stars cell))))))
+        grid-with-stars (segment-stars stars "x" "y")
+        grid-aggregates (for [row grid-with-stars]
+                          (for [cell row]
+                            (aggregate-stars cell)))]
+    (json/generate-string (gen-cell-colors grid-aggregates))))
