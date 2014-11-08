@@ -21432,7 +21432,7 @@ retrospector.app.keycodes = new cljs.core.PersistentArrayMap(null, 3, [38, "x", 
 retrospector.app.STATE = cljs.core.atom.call(null, cljs.core.PersistentArrayMap.EMPTY);
 retrospector.app.make_request = function(a, b, c) {
   retrospector.utils.logging.debug.call(null, "Getting stars", a, b, c);
-  goog.net.XhrIo.send([cljs.core.str("http://"), cljs.core.str(retrospector.app.HOSTNAME), cljs.core.str(":"), cljs.core.str(retrospector.app.PORT), cljs.core.str("/api/v1/stars?field\x3d"), cljs.core.str(a), cljs.core.str("\x26offset\x3d"), cljs.core.str(b), cljs.core.str("\x26limit\x3d"), cljs.core.str(c)].join(""), retrospector.app.load_colors_callback);
+  goog.net.XhrIo.send([cljs.core.str("/api/v1/stars?field\x3d"), cljs.core.str(a), cljs.core.str("\x26offset\x3d"), cljs.core.str(b), cljs.core.str("\x26limit\x3d"), cljs.core.str(c)].join(""), retrospector.app.load_colors_callback);
   return cljs.core.swap_BANG_.call(null, retrospector.app.STATE, function(a) {
     return cljs.core.assoc.call(null, a, "x", cljs.core.get.call(null, a, "x") + 100);
   });

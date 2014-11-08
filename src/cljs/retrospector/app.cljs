@@ -117,8 +117,7 @@
   [field offset limit]
   (debug "Getting stars" field offset limit)
   (.send goog.net.XhrIo
-         (str "http://" HOSTNAME ":" PORT
-              "/api/v1/stars?field=" field
+         (str "/api/v1/stars?field=" field
               "&offset=" offset "&limit=" limit)
          load-colors-callback)
   (swap! STATE #(assoc % "x" (+ (get % "x") 100))))
