@@ -6,6 +6,19 @@ An experimental star viewer that allows you to step through the galactic starfie
 
 ## Usage
 
+### From a server
+
+```
+lein deps
+lein cljsbuild once
+lein run
+
+# Go to http://127.0.0.1:9000/app
+# Press the up arrow to slice the galaxy!
+```
+
+### From the Repl
+
 ```
 lein deps
 lein repl
@@ -14,12 +27,12 @@ lein repl
 >> (in-ns 'retrospector.server)
 >> (restart-server!)
 
-# In your browser go to 127.0.0.1:9000/app
+# In your browser go to http://127.0.0.1:9000/app
 >> (in-ns 'retrospector.app)
->> (restart-app!)
+>> (reset-app!)
 
 # Load a slice of the galaxy!
->> (.send goog.net.XhrIo "http://127.0.0.1:9000/api/v1/stars?field=y&offset=0&limit=1000" load-colors-callback)
+>> (make-request "x" 1000 1000)
 ```
 
 ## License
